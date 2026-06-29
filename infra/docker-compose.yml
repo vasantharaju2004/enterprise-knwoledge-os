@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ragos_postgres
+    environment:
+      POSTGRES_USER: ragos
+      POSTGRES_PASSWORD: ragos_dev_password
+      POSTGRES_DB: ragos_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  redis:
+    image: redis:7
+    container_name: ragos_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: ragos_qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+
+volumes:
+  postgres_data:
+  redis_data:
+  qdrant_data:
+
+
