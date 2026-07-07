@@ -64,7 +64,7 @@ def upsert_chunks(
                     "chunk_index": i,
                     "text": chunk_text,
                     "user_id": user_id,
-                    "org_od": org_id,
+                    "org_id": org_id,
                 },
             )
         )
