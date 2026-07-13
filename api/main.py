@@ -145,6 +145,7 @@ async def upload_documents(file: UploadFile = File(...)):
 
 class QueryRequest(BaseModel):
     question: str
+    document_id: str | None = None
 
 
 @app.post("/query")
@@ -157,6 +158,7 @@ def query_documents(request: QueryRequest):
         question=request.question,
         user_id="dev_user",
         org_id="dev_org",
+        document_id=request.document_id,
     )
 
 

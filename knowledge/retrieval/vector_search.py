@@ -4,7 +4,11 @@ from storage.vector_store.qdrant_store import get_client, COLLECTION_NAME
 
 
 def search(
-    query: str, user_id: str = "dev_user", org_id: str = "dev_org", top_k: int = 5
+    query: str,
+    user_id: str = "dev_user",
+    org_id: str = "dev_org",
+    document_id: str = None,
+    top_k: int = 5,
 ) -> list[dict]:
     """
     Embeds a question with the same model used for chunks, searches
@@ -17,16 +21,18 @@ def search(
 
     query_vector = embed_texts([query])[0]
 
+    must_conditions = [
+        {"key": "user_id", "match": {"value": user_id}},
+        {"key": "org_id", "match": {"value": org_id}},
+    ]
+    if document_id:
+        must_conditions.append({"key": "document_id", "match": {"value": document_id}})
+
     client = get_client()
     results = client.query_points(
         collection_name=COLLECTION_NAME,
         query=query_vector,
-        query_filter={
-            "must": [
-                {"key": "user_id", "match": {"value": user_id}},
-                {"key": "org_id", "match": {"value": org_id}},
-            ]
-        },
+        query_filter={"must": must_conditions},
         limit=top_k,
     )
 
