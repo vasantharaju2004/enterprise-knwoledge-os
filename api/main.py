@@ -28,10 +28,25 @@ from knowledge.ingestion.pipeline import ingest_document
 from reasoning.chains.rag_chain import answer_question
 from pydantic import BaseModel
 
+# CORS (cross-origin resource sharing)
+from fastapi.middleware.cors import CORSMiddleware
+
+# recent chat history
+from memory.conversation_memory import get_all_history
+
 
 load_dotenv()
 
 app = FastAPI()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health")
@@ -170,3 +185,8 @@ def list_documents():
     page will call to show the document list.
     """
     return get_all_documents()
+
+
+@app.get("/history")
+def get_history():
+    return get_all_history()
