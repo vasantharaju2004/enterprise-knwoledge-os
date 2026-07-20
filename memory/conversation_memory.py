@@ -2,18 +2,20 @@ import os
 import uuid
 import psycopg2
 from dotenv import load_dotenv
+from storage.relational_store.db_connection import get_connection
 
 load_dotenv()
 
+get_connection()
 
-def get_connection():
-    return psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST"),
-        port=os.getenv("POSTGRES_PORT"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD"),
-        dbname=os.getenv("POSTGRES_DB"),
-    )
+# def get_connection():
+#     return psycopg2.connect(
+#         host=os.getenv("POSTGRES_HOST"),
+#         port=os.getenv("POSTGRES_PORT"),
+#         user=os.getenv("POSTGRES_USER"),
+#         password=os.getenv("POSTGRES_PASSWORD"),
+#         dbname=os.getenv("POSTGRES_DB"),
+#     )
 
 
 def create_conversation_table() -> None:

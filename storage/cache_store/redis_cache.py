@@ -6,11 +6,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-_redis = Redis(
-    host=os.getenv("REDIS_HOST"),
-    port=int(os.getenv("REDIS_PORT")),
-    decode_responses=True,
-)
+_redis_url = os.getenv("REDIS_URL")
+if _redis_url:
+    # cloud (upstash) - one URL bundles host, port, password, and TLS.
+    _redis = Redis.from_url(_redis_url, decode_responses=True)
+else:
+    # Local Docker -Seperate host/port , no password, no TLS
+    _redis = Redis(
+        host=os.getenv("REDIS_HOST"),
+        port=int(os.getenv("REDIS_PORT")),
+        decode_responses=True,
+    )
 
 
 def _make_cache_key(

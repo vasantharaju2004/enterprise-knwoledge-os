@@ -13,10 +13,20 @@ VECTOR_SIZE = 384  # must match local_embedder.py's output dimension exactly
 
 
 def get_client() -> QdrantClient:
-    return QdrantClient(
-        host=os.getenv("QDRANT_HOST"),
-        port=os.getenv("QDRANT_PORT"),
-    )
+    qdrant_url = os.getenv("QDRANT_URL")
+    if qdrant_url:
+        # cloud (Qdrant cloud) needs the API key for auth,
+        # something local Docker Qdrant never required.
+        return QdrantClient(
+            url=qdrant_url,
+            api_key=os.getenv("QDRANT_API_KEY"),
+        )
+    else:
+        # Local DOcker - no auth, plain host/port.
+        return QdrantClient(
+            host=os.getenv("QDRANT_HOST"),
+            port=os.getenv("QDRANT_PORT"),
+        )
 
 
 def create_collection() -> None:
