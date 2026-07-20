@@ -52,8 +52,8 @@ def create_documents_table() -> None:
             duration_seconds    FLOAT,
             page_count          INTEGER,
             status              TEXT NOT NULL DEFAULT 'uploaded',
-            user_id             TEXT NOT NULL DEFAULT 'dev_user',
-            org_id              TEXT NOT NULL DEFAULT 'dev_org',
+            user_id             TEXT NOT NULL,
+            org_id              TEXT NOT NULL,
             created_at          TIMESTAMP NULL DEFAULT NOW()
             
         )
@@ -66,11 +66,11 @@ def create_documents_table() -> None:
 # validate the document metadata
 def create_document_record(
     filename: str,
+    user_id: str,
+    org_id: str,
     source_type: str = "pdf",
     file_path: str = None,
     source_url: str = None,
-    user_id: str = "dev_user",
-    org_id: str = "dev_org",
 ) -> str:
     """
     Insert a new  document record and returns its generated ID.
@@ -126,7 +126,7 @@ def update_document_status(
     conn.close()
 
 
-def get_all_documents() -> list:
+def get_all_documents(user_id: str, org_id: str) -> list:
     """ """
     conn = get_connection()
     cur = conn.cursor()
@@ -134,8 +134,10 @@ def get_all_documents() -> list:
         """
             SELECT id, filename,source_type, status,page_count, duration_seconds ,created_at
             FROM documents
+            WHERE org_id =%s AND user_id =%s
             ORDER BY created_at DESC
-        """
+        """,
+        (org_id, user_id),
     )
     rows = cur.fetchall()
     cur.close()
@@ -149,6 +151,39 @@ def get_all_documents() -> list:
             "page_count": r[4],
             "duration_seconds": r[5],
             "created_at": r[6],
+        }
+        for r in rows
+    ]
+
+
+def get_all_db_tables():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT
+            table_name,
+            column_name,
+            data_type,
+            column_default,
+            is_nullable
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+        ORDER BY table_name, ordinal_position;
+    """)
+
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return [
+        {
+            "table_name": r[0],
+            "column_name": r[1],
+            "data_type": r[2],
+            "column_default": r[3],
+            "is_nullable": r[4],
         }
         for r in rows
     ]

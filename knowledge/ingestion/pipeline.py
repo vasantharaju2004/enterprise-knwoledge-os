@@ -23,8 +23,8 @@ def ingest_document(
     file_path: str,
     source_type: str,
     document_id: str,
-    user_id: str = "user_id",
-    org_id: str = "dev_id",
+    user_id: str,
+    org_id: str,
 ) -> dict:
     """
     Runs the full journey from a saved file to searchable,

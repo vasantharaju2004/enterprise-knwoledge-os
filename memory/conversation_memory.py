@@ -32,8 +32,8 @@ def create_conversation_table() -> None:
             answer         TEXT NOT NULL,
             document_id    TEXT,
             provider_used  TEXT,
-            user_id        TEXT NOT NULL DEFAULT 'dev_user',
-            org_id         TEXT NOT NULL DEFAULT 'dev_org',
+            user_id        TEXT NOT NULL ,
+            org_id         TEXT NOT NULL ,
             created_at     TIMESTAMP DEFAULT NOW()
         )
     """)
@@ -45,10 +45,10 @@ def create_conversation_table() -> None:
 def save_turn(
     question: str,
     answer: str,
-    document_id: str = None,
-    provider_used: str = None,
-    user_id: str = "dev_user",
-    org_id: str = "dev_org",
+    user_id: str,
+    org_id: str,
+    document_id: str,
+    provider_used: str,
 ) -> None:
     conn = get_connection()
     cur = conn.cursor()
@@ -73,9 +73,7 @@ def save_turn(
     conn.close()
 
 
-def get_recent_turns(
-    user_id: str = "dev_user", org_id: str = "dev_org", limit: int = 3
-) -> list[dict]:
+def get_recent_turns(user_id: str, org_id: str, limit: int = 3) -> list[dict]:
     """
     Returns the most recent turns, oldest first, so they read in
     natural conversational order when injected into a prompt.
@@ -100,7 +98,7 @@ def get_recent_turns(
     return [{"question": r[0], "answer": r[1]} for r in reversed(rows)]
 
 
-def get_all_history(user_id: str = "dev_user", org_id: str = "dev_org") -> list[dict]:
+def get_all_history(user_id: str, org_id: str) -> list[dict]:
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(

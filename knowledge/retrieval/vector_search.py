@@ -5,8 +5,8 @@ from storage.vector_store.qdrant_store import get_client, COLLECTION_NAME
 
 def search(
     query: str,
-    user_id: str = "dev_user",
-    org_id: str = "dev_org",
+    user_id: str,
+    org_id: str,
     document_id: str = None,
     top_k: int = 5,
 ) -> list[dict]:
