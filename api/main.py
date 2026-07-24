@@ -73,40 +73,31 @@ app.add_middleware(
 def health_check():
     results = {}
 
-    # Postgres
     try:
-        conn = psycopg2.connect(
-            host=os.getenv("POSTGRES_HOST"),
-            port=os.getenv("POSTGRES_PORT"),
-            user=os.getenv("POSTGRES_USER"),
-            password=os.getenv("POSTGRES_PASSWORD"),
-            dbname=os.getenv("POSTGRES_DB"),
-        )
+        from storage.relational_store.db_connection import get_connection
+
+        conn = get_connection()
         conn.close()
         results["postgres"] = "connected"
     except Exception as e:
-        results["postgres"] = f"failed :{e}"
+        results["postgres"] = f"failed: {e}"
 
-    # Redis
     try:
-        r = redis.Redis(
-            host=os.getenv("REDIS_HOST"),
-            port=os.getenv("REDIS_PORT"),
-        )
-        r.ping()
+        from storage.cache_store.redis_cache import _redis
+
+        _redis.ping()
         results["redis"] = "connected"
     except Exception as e:
-        results["redis"] = f"failed :{e}"
+        results["redis"] = f"failed: {e}"
 
-    # Qdrant
     try:
-        q = QdrantClient(
-            host=os.getenv("QDRANT_HOST"), port=int(os.getenv("QDRANT_PORT"))
-        )
-        q.get_collections()
+        from storage.vector_store.qdrant_store import get_client
+
+        client = get_client()
+        client.get_collections()
         results["qdrant"] = "connected"
     except Exception as e:
-        results["qdrant"] = f"failed :{e}"
+        results["qdrant"] = f"failed: {e}"
 
     return results
 
