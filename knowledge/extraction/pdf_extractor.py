@@ -4,11 +4,26 @@ from PIL import Image
 import io
 from transformers import BlipProcessor, BlipForConditionalGeneration
 
-processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+# processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
 
-model = BlipForConditionalGeneration.from_pretrained(
-    "Salesforce/blip-image-captioning-base"
-)
+# model = BlipForConditionalGeneration.from_pretrained(
+#     "Salesforce/blip-image-captioning-base"
+# )
+
+_processor = None
+_model = None
+
+
+def _get_blip():
+    global _processor, _model
+    if _model is None:
+        _processor = BlipProcessor.from_pretrained(
+            "Salesforce/blip-image-captioning-base"
+        )
+        _model = BlipForConditionalGeneration.from_pretrained(
+            "Salesforce/blip-image-captioning-base"
+        )
+    return _processor, _model
 
 
 def extract_pdf(file_path: str) -> list[dict]:
@@ -39,7 +54,7 @@ def extract_pdf(file_path: str) -> list[dict]:
         image = Image.open(io.BytesIO(img_bytes))
 
         ocr_image_text = pytesseract.image_to_string(image).strip()
-
+        processor, model = _get_blip()
         inputs = processor(images=image, return_tensors="pt")
         out = model.generate(**inputs, max_new_tokens=50)
         caption = processor.decode(out[0], skip_special_tokens=True)
