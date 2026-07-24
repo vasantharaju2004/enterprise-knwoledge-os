@@ -102,6 +102,20 @@ def health_check():
     return results
 
 
+@app.get("/")
+def root():
+    """
+    A simple identity/status endpoint for the bare root path —
+    not meant for real use, just confirms the API is alive and
+    points toward /docs for anyone poking at the URL directly.
+    """
+    return {
+        "service": "Enterprise Knowledge OS API",
+        "status": "running",
+        "docs": "/docs",
+    }
+
+
 @app.on_event("startup")
 def startup():
     create_documents_table()
