@@ -6,10 +6,10 @@ from knowledge.extraction.audio_extractor import extract_audio
 
 from knowledge.chunking.recursive_chunker import chunk_recursive
 
-from knowledge.embeddings.local_embedder import embed_texts
+from knowledge.embeddings.embedder_factory import get_embedder
 
 from storage.vector_store.qdrant_store import upsert_chunks
-
+import os
 
 EXTRACTORS = {
     "pdf": extract_pdf,
@@ -47,7 +47,8 @@ def ingest_document(
     full_text = "\n\n".join(p["text"] for p in pages)
 
     chunks = chunk_recursive(full_text, chunk_size=512, overlap=64)
-    vectors = embed_texts(chunks)
+    embed_texts = get_embedder()
+    vectors = embed_texts(chunks, input_type="search_document")
 
     upsert_chunks(
         document_id=document_id,

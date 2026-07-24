@@ -2,14 +2,16 @@ from dotenv import load_dotenv
 import os
 import uuid
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct
+from qdrant_client.models import Distance, VectorParams, PointStruct, PayloadSchemaType
 
 
 load_dotenv()
 
 
 COLLECTION_NAME = "document_chunks"
-VECTOR_SIZE = 384  # must match local_embedder.py's output dimension exactly
+VECTOR_SIZE = (
+    1024 if os.getenv("EMBEDDING_PROVIDER") == "cohere" else 384
+)  # must match local_embedder.py's output dimension exactly
 
 
 def get_client() -> QdrantClient:
@@ -30,12 +32,6 @@ def get_client() -> QdrantClient:
 
 
 def create_collection() -> None:
-    """
-    Creates the document_chunks collection if it doesn't exist.
-    Safe to call repeatedly at startup, same pattern as
-    create_documents_tabel() in Postgres.
-    """
-
     client = get_client()
     existing = [c.name for c in client.get_collections().collections]
 
@@ -44,6 +40,20 @@ def create_collection() -> None:
             collection_name=COLLECTION_NAME,
             vectors_config=VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE),
         )
+
+    # Qdrant Cloud requires an explicit index before filtering by a
+    # payload field — local Docker Qdrant didn't enforce this the
+    # same way, which is why this gap only surfaced now, testing
+    # against the cloud collection directly for the first time.
+    for field in ["user_id", "org_id", "document_id"]:
+        try:
+            client.create_payload_index(
+                collection_name=COLLECTION_NAME,
+                field_name=field,
+                field_schema=PayloadSchemaType.KEYWORD,
+            )
+        except Exception:
+            pass  # index already exists — safe to ignore
 
 
 def upsert_chunks(

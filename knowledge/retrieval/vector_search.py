@@ -1,4 +1,4 @@
-from knowledge.embeddings.local_embedder import embed_texts
+from knowledge.embeddings.embedder_factory import get_embedder
 
 from storage.vector_store.qdrant_store import get_client, COLLECTION_NAME
 
@@ -18,8 +18,8 @@ def search(
     without it, one user;s question could return another user's
     private document chunks.
     """
-
-    query_vector = embed_texts([query])[0]
+    embed_texts = get_embedder()
+    query_vector = embed_texts([query], input_type="search_query")[0]
 
     must_conditions = [
         {"key": "user_id", "match": {"value": user_id}},
